@@ -79,6 +79,7 @@ QList<QStringList> MsgWebView::parseDocNode(const QDomNode& node)
 			}
 		}
 	}
+
 	return attribute;
 }
 
