@@ -18,15 +18,46 @@ TalkWindow::~TalkWindow()
 
 void TalkWindow::addEmotionImage(int emotionNum)
 {
+	ui.textEdit->setFocus();
+	ui.textEdit->addEmotionUrl(emotionNum);
 }
 
 void TalkWindow::setWindowName(const QString& name)
 {
-
+	ui.nameLabel->setText(name);
 }
 
 void TalkWindow::onSendBtnClicked(bool)
 {
+	if (ui.textEdit->toPlainText().isEmpty()) {
+		QToolTip::showText(this->mapToGlobal(QPoint(630, 660)), QString::fromLocal8Bit("发送的信息不能为空！"),
+			this, QRect(0, 0, 120, 100), 2000);
+		return;
+	}
+	QString html = ui.textEdit->document()->toHtml();
+	//文本html如果没有字体则添加字体 msgFont.txt
+	if (!html.contains(".png") && !html.contains("</span>")) {
+		QString fontHtml;
+		QString text = ui.textEdit->toPlainText();
+		QFile file(":/Resources/MainWindow/MsgHtml/msgFont.txt");
+		if (file.open(QIODevice::ReadOnly)) {
+			fontHtml = file.readAll();
+			fontHtml.replace("%1", text);
+			file.close();
+		}
+		else {
+			QMessageBox::information(this, "Tips", "file not exist!");
+			return;
+		}
+		if (!html.contains(fontHtml)) {
+			html.replace(text, fontHtml);
+		}
+	}
+
+	ui.textEdit->clear();
+	ui.textEdit->deletAllEmotionImage();
+
+	ui.msgWidget->appendMsg(html);//收信息窗口添加信息
 }
 
 void TalkWindow::onItemDoubleClicked(QTreeWidgetItem* item, int colnum)

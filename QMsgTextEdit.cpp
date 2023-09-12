@@ -11,7 +11,7 @@ QMsgTextEdit::~QMsgTextEdit()
 
 void QMsgTextEdit::addEmotionUrl(int emotionNum)
 {
-	const QString& imageName = QString(":/Resources/MainWindow/emotion/%1.png").arg(emotionNum);
+	const QString& imageName = QString("qrc:/Resources/MainWindow/emotion/%1.png").arg(emotionNum);
 	const QString& flagName = QString("%1").arg(imageName);
 	insertHtml(QString("<img src='%1' />").arg(flagName));
 	if (m_listEmotionUrl.contains(imageName)) {

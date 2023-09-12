@@ -21,6 +21,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -55,10 +56,19 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
+    <IncludePath>C:\my\mysql-8.0.29-winx64\include;$(SolutionDir);$(IncludePath)</IncludePath>
+    <LibraryPath>C:\my\mysql-8.0.29-winx64\include;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <AdditionalDependencies>C:\my\mysql-8.0.29-winx64\lib\libmysql.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\my\mysql-8.0.29-winx64\lib;C:\my\mysql-8.0.29-winx64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -89,6 +99,7 @@
     <ClCompile Include="CCMainWindow.cpp" />
     <ClCompile Include="ContactItem.cpp" />
     <ClCompile Include="CustomMenu.cpp" />
+    <ClCompile Include="DBconn.cpp" />
     <ClCompile Include="EmotionLabelItem.cpp" />
     <ClCompile Include="EmotionWindow.cpp" />
     <ClCompile Include="MsgWebView.cpp" />
@@ -139,6 +150,7 @@
     <QtMoc Include="EmotionLabelItem.h" />
     <QtMoc Include="QMsgTextEdit.h" />
     <QtMoc Include="MsgWebView.h" />
+    <ClInclude Include="DBconn.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="SkinWindow.h" />
     <QtMoc Include="CCMainWindow.h" />

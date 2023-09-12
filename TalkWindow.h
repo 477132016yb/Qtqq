@@ -1,10 +1,13 @@
 #pragma once
 #include <QWidget>
+#include<QToolTip>
 #include "ui_TalkWindow.h"
 #include"CommonUtils.h"
 #include"RootContactItem.h"
 #include"ContactItem.h"
 #include"WindowManger.h"
+#include<QFile>
+#include<QMessageBox>
 class TalkWindow : public QWidget
 {
 	Q_OBJECT

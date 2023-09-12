@@ -91,6 +91,9 @@
     <ClCompile Include="MsgWebView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DBconn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="TitleBar.h">
@@ -156,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DBconn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

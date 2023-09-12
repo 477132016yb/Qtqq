@@ -16,6 +16,13 @@ UserLogin::~UserLogin()
 
 void UserLogin::onLoginBtnClicked()
 {
+	if (!veryfyAccountCode()) {
+		QMessageBox::information(NULL, QString::fromLocal8Bit("提示"),
+			QString::fromLocal8Bit("您输入的账号或密码有误，请重新输入！"));
+		ui.editPassword->setText("");
+		ui.editUserAccount->setText("");
+		return;
+	}
 	close();
 	CCMainWindow *mainwindow = new CCMainWindow;
 	mainwindow->show();
@@ -29,4 +36,52 @@ void UserLogin::initControl()
 	headlabel->setPixmap(getRoundImage(QPixmap(":/Resources/MainWindow/girl.png"), pix, headlabel->size()));
 	headlabel->move(width() / 2 - 34, ui.titleWidget->height()-34);
 	connect(ui.loginBtn, &QPushButton::clicked, this, &UserLogin::onLoginBtnClicked);  
+	if(!connectMySql()){
+		QMessageBox::information(NULL, QString::fromLocal8Bit("提示"),
+			QString::fromLocal8Bit("连接数据库失败"));
+		close();
+	}
+}
+
+bool UserLogin::connectMySql()
+{
+	return db.getConnection("localhost", "root", "123456", "qtqq");
+}
+
+bool UserLogin::veryfyAccountCode()
+{
+	QString strAccountInput = ui.editUserAccount->text();
+	QString strCodeInput = ui.editPassword->text();
+
+	string strSqlCode="SELECT code FROM tab_accounts WHERE employeeID ="+ strAccountInput.toStdString();
+
+	MYSQL_RES* res = db.myQuery(strSqlCode);
+	MYSQL_ROW row;
+	if (res&& mysql_num_rows(res)) {
+		int count2 = mysql_num_fields(res);
+		row = mysql_fetch_row(res);
+		QString strCode = QString(row[0]);
+		if (strCode == strCodeInput) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	//账号登录
+	string temp = "'" + strAccountInput.toStdString() + "'";
+	string strSqlAccount = "SELECT code,employeeID FROM tab_accounts WHERE account =" + temp;
+	res = db.myQuery(strSqlAccount);
+	if (res && mysql_num_rows(res)) {
+		int count2 = mysql_num_fields(res);
+		row = mysql_fetch_row(res);
+		QString strCode = QString(row[0]);
+		if (strCode == strCodeInput) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	return false;
 }
