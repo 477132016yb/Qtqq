@@ -25,10 +25,37 @@ void MsgWebView::appendMsg(const QString& html)
 	QJsonObject msgObj;
 	QString qsMsg;
 	const QList<QStringList>msgList = parseHtml(html);//解析html
+
+	int msgType = 1;//信息类型:0是表情 1是文本 2是文件
+	QString strData;//发送的数据
+
+
 	for (int i = 0; i < msgList.size(); i++) {
 		if (msgList.at(i).at(0) == "img") {
 			QString imagePath = msgList.at(i).at(1);
 			QPixmap pixmap;
+
+			//获取表情名称的位置
+			QString strEmotionPath = "qrc:/Resources/MainWindow/emotion/";
+			int pos = strEmotionPath.size();
+
+			//获取表情名称
+			QString strEmotionName = imagePath.mid(pos);
+			strEmotionName.replace(".png", "");
+
+			//表情名称长度补足三位
+			int emotionNameL = strEmotionName.length();
+			if (emotionNameL == 1) {
+				strData = strData + "00" + strEmotionName;
+			}
+			else if (emotionNameL == 2) {
+				strData = strData + "0" + strEmotionName;
+			}
+			else if (emotionNameL == 3) {
+				strData = strData + strEmotionName;
+			}
+			msgType = 0;
+
 			if (imagePath.left(3) == "qrc") {
 				pixmap.load(imagePath.mid(3));
 			}
@@ -42,12 +69,15 @@ void MsgWebView::appendMsg(const QString& html)
 		}
 		else if (msgList.at(i).at(0) == "text") {
 			qsMsg += msgList.at(i).at(1);
+			strData = qsMsg;
 		}
 	}
 
 	msgObj.insert("MSG", qsMsg);
 	const QString& Msg = QJsonDocument(msgObj).toJson(QJsonDocument::Compact);
 	this->page()->runJavaScript(QString("appendHtml(%1)").arg(Msg));
+
+	emit signalSendMsg(strData, msgType);
 }
 
 QList<QStringList> MsgWebView::parseHtml(const QString& html)
