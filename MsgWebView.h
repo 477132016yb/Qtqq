@@ -7,6 +7,8 @@
 #include<QJsonObject>
 #include<QJsonDocument>
 #include<QWebChannel>
+#include"TalkWindowShell.h"
+#include"WindowManger.h"
 //QWebEngineView用于显示网页
 class MsgHtmlObject :public QObject {
 	Q_OBJECT
@@ -42,6 +44,8 @@ private:
 	QList<QStringList>parseHtml(const QString& html);//解析html
 	//Qt中所有DOM属性（属性、说明、文本）都可以使用QDomNode表示
 	QList<QStringList>parseDocNode(const QDomNode& node);
+signals:
+	void signalSendMsg(QString& strData, int& msgType, QString sFile = "");
 private:
 	MsgHtmlObject* m_msgHtmlObj;
 };

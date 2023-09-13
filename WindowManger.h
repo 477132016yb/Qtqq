@@ -14,6 +14,7 @@ public:
 	QWidget* findWindowName(const QString& qWindowName);
 	void deleteWindowName(const QString& qWindowName);
 	void addWindowName(const QString& qWindowName, QWidget* aWidget);
+	TalkWindowShell* getTalkWindowShell();
 
 	static WindowManger* getInstance();
 	void addNewTalkWindow(const QString& uid);

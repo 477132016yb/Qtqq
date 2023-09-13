@@ -30,6 +30,11 @@ void WindowManger::addWindowName(const QString& qWindowName, QWidget* aWidget)
 	}
 }
 
+TalkWindowShell* WindowManger::getTalkWindowShell()
+{
+	return m_talkWindowShell;
+}
+
 WindowManger* WindowManger::getInstance()
 {
 	return theInstance;

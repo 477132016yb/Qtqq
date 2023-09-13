@@ -10,6 +10,9 @@ MsgWebView::MsgWebView(QWidget* parent)
 	m_msgHtmlObj = new MsgHtmlObject(this);
 	channel->registerObject("external", m_msgHtmlObj);
 	this->page()->setWebChannel(channel);
+
+	TalkWindowShell* talkWindowShell = WindowManger::getInstance()->getTalkWindowShell();
+	connect(this, &MsgWebView::signalSendMsg, talkWindowShell, &TalkWindowShell::updateSendTcpMsg);
 	//初始化收信息页面
 	this->load(QUrl("qrc:/Resources/MainWindow/MsgHtml/msgTmpl.html"));
 }
