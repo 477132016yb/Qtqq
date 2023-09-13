@@ -1,5 +1,5 @@
 #include "DBconn.h"
-
+Q_GLOBAL_STATIC(DBconn, theInstance)
 DBconn::DBconn()
 {
 	closed = false;
@@ -89,6 +89,11 @@ void DBconn::close()
 {
 	mysql_close(&mysql);
 	closed = true;
+}
+
+DBconn* DBconn::getInstance()
+{
+	return theInstance;
 }
 
 MYSQL_RES* DBconn::myQuery(string op)

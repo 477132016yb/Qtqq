@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include"TalkWindowShell.h"
+#include"DBconn.h"
 class WindowManger  : public QObject
 {
 	Q_OBJECT
@@ -15,7 +16,7 @@ public:
 	void addWindowName(const QString& qWindowName, QWidget* aWidget);
 
 	static WindowManger* getInstance();
-	void addNewTalkWindow(const QString& uid, GroupType groupType = COMPANY, const QString& people = "");
+	void addNewTalkWindow(const QString& uid);
 private:
 	TalkWindowShell* m_talkWindowShell;
 	QMap<QString, QWidget*>m_windowMap;

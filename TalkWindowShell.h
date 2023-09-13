@@ -4,6 +4,7 @@
 #include"BasicWindow.h"
 #include<QMap>
 #include<QListWidget>
+#include"DBconn.h"
 class TalkWindow;
 class TalkWindowItem;
 class QListWidgetItem;
@@ -16,7 +17,7 @@ public:
 	TalkWindowShell(QWidget *parent = nullptr);
 	~TalkWindowShell();
 public:
-	void addTalkWindow(TalkWindow* talkWindow,TalkWindowItem*talkWindowItem, GroupType);
+	void addTalkWindow(TalkWindow* talkWindow,TalkWindowItem*talkWindowItem, const QString& uid);
 	void setCurrentWidget(QWidget* widget);
 	const QMap<QListWidgetItem*, QWidget*>& getTalkWindowItemMap() const;
 private:

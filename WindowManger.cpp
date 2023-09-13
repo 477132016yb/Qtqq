@@ -35,44 +35,33 @@ WindowManger* WindowManger::getInstance()
 	return theInstance;
 }
 
-void WindowManger::addNewTalkWindow(const QString& uid, GroupType groupType, const QString& people)
+void WindowManger::addNewTalkWindow(const QString& uid)
 {
-	if (m_talkWindowShell==nullptr) {
+	if (m_talkWindowShell == nullptr) {
 		m_talkWindowShell = new TalkWindowShell;
 		connect(m_talkWindowShell, &TalkWindowShell::destroyed, [this](QObject* obj) {
 			m_talkWindowShell = nullptr;
-		});
+			});
 	}
 	QWidget* widget = findWindowName(uid);
 	if (!widget) {
-		TalkWindow* talkWindow = new TalkWindow(m_talkWindowShell, uid, groupType);
+		TalkWindow* talkWindow = new TalkWindow(m_talkWindowShell, uid);
 		TalkWindowItem* talkWindowItem = new TalkWindowItem(talkWindow);
-		switch (groupType)
-		{
-		case COMPANY:
-			talkWindow->setWindowName(QStringLiteral("yb科技"));
-			talkWindowItem->setMsgLabelContent(QStringLiteral("公司群"));
-			break;
-		case PERSONELGROUP:
-			talkWindow->setWindowName(QStringLiteral("大家好"));
-			talkWindowItem->setMsgLabelContent(QStringLiteral("人事群"));
-			break;
-		case DEVELOPMENTGROUP:
-			talkWindow->setWindowName(QStringLiteral("只有两种编程语言：一种是天天挨骂，另一种是没人用"));
-			talkWindowItem->setMsgLabelContent(QStringLiteral("研发群"));
-			break;
-		case MARKETGROUP:
-			talkWindow->setWindowName(QStringLiteral("今天工作不努力，明天努力找工作"));
-			talkWindowItem->setMsgLabelContent(QStringLiteral("市场群"));
-			break;
-		case PTOP:
-			talkWindow->setWindowName(QStringLiteral("人人为我，我为人人"));
-			talkWindowItem->setMsgLabelContent(people);
-			break;
-		default:
-			break;
+		//判断群聊还是单聊
+		string strSql = "SELECT department_name,sign FROM tab_department WHERE departmentID = "+uid.toStdString();
+		MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+		MYSQL_ROW row;
+		QString strWindowName, strMsgLabel;
+		if (mysql_num_rows(res)==0) {//单聊
+			strSql = "SELECT employee_name,employee_sign FROM tab_employees WHERE employeeID = " + uid.toStdString();
+			res = DBconn::getInstance()->myQuery(strSql);
 		}
-		m_talkWindowShell->addTalkWindow(talkWindow, talkWindowItem, groupType);
+		row = mysql_fetch_row(res);
+		strWindowName = QString(row[1]);
+		strMsgLabel = QString(row[0]);
+		talkWindow->setWindowName(strWindowName);
+		talkWindowItem->setMsgLabelContent(strMsgLabel);
+		m_talkWindowShell->addTalkWindow(talkWindow, talkWindowItem, uid);
 	}
 	else {
 		//左侧聊天列表设为选中

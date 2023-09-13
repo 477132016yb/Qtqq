@@ -24,7 +24,7 @@ void UserLogin::onLoginBtnClicked()
 		return;
 	}
 	close();
-	CCMainWindow *mainwindow = new CCMainWindow;
+	CCMainWindow *mainwindow = new CCMainWindow(nullptr,m_gLoginEmployeeID);
 	mainwindow->show();
 }
 
@@ -45,7 +45,7 @@ void UserLogin::initControl()
 
 bool UserLogin::connectMySql()
 {
-	return db.getConnection("localhost", "root", "123456", "qtqq");
+	return  DBconn::getInstance()->getConnection("localhost", "root", "123456", "qtqq");
 }
 
 bool UserLogin::veryfyAccountCode()
@@ -55,13 +55,14 @@ bool UserLogin::veryfyAccountCode()
 
 	string strSqlCode="SELECT code FROM tab_accounts WHERE employeeID ="+ strAccountInput.toStdString();
 
-	MYSQL_RES* res = db.myQuery(strSqlCode);
+	DBconn::getInstance()->myQuery("ALTER TABLE tab_department CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;");
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(strSqlCode);
 	MYSQL_ROW row;
 	if (res&& mysql_num_rows(res)) {
-		int count2 = mysql_num_fields(res);
 		row = mysql_fetch_row(res);
 		QString strCode = QString(row[0]);
 		if (strCode == strCodeInput) {
+			m_gLoginEmployeeID = strAccountInput;
 			return true;
 		}
 		else {
@@ -71,12 +72,12 @@ bool UserLogin::veryfyAccountCode()
 	//ÕËºÅµÇÂ¼
 	string temp = "'" + strAccountInput.toStdString() + "'";
 	string strSqlAccount = "SELECT code,employeeID FROM tab_accounts WHERE account =" + temp;
-	res = db.myQuery(strSqlAccount);
+	res = DBconn::getInstance()->myQuery(strSqlAccount);
 	if (res && mysql_num_rows(res)) {
-		int count2 = mysql_num_fields(res);
 		row = mysql_fetch_row(res);
 		QString strCode = QString(row[0]);
 		if (strCode == strCodeInput) {
+			m_gLoginEmployeeID = QString(row[1]);
 			return true;
 		}
 		else {

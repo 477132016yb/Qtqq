@@ -17,7 +17,7 @@ TalkWindowShell::~TalkWindowShell()
 	m_emotionWindow = nullptr;
 }
 
-void TalkWindowShell::addTalkWindow(TalkWindow* talkWindow, TalkWindowItem* talkWindowItem,GroupType grouptype)
+void TalkWindowShell::addTalkWindow(TalkWindow* talkWindow, TalkWindowItem* talkWindowItem, const QString& uid)
 {
 	ui.rightStackedWidget->addWidget(talkWindow);
 	connect(m_emotionWindow, SIGNAL(signalEmotionWindowHide()), talkWindow, SLOT(onSetEmotionBtnStatus()));
@@ -27,8 +27,20 @@ void TalkWindowShell::addTalkWindow(TalkWindow* talkWindow, TalkWindowItem* talk
 
 	aItem->setSelected(true);
 
-	QPixmap image(":/Resources/MainWindow/girl.png");
-	talkWindowItem->setHeadPixmap("");//设置头像
+	//判断群聊还是单聊
+	string strSql = "SELECT picture FROM tab_department WHERE departmentID = " + uid.toStdString();
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+	MYSQL_ROW row;
+	QString imgPath;
+	if (mysql_num_rows(res) == 0) {//单聊
+		strSql = "SELECT picture FROM tab_employees WHERE employeeID = " + uid.toStdString();
+		res = DBconn::getInstance()->myQuery(strSql);
+	}
+	row = mysql_fetch_row(res);
+	imgPath = QString(row[0]);
+	QImage img;
+	img.load(imgPath);
+	talkWindowItem->setHeadPixmap(QPixmap::fromImage(img));//设置头像
 	ui.listWidget->addItem(aItem);
 	ui.listWidget->setItemWidget(aItem, talkWindowItem);
 

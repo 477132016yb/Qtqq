@@ -11,13 +11,13 @@
 #include"ContactItem.h"
 #include"WindowManger.h"
 #include"TalkWindowShell.h"
-
+#include "DBconn.h"
 class CCMainWindow : public BasicWindow
 {
 	Q_OBJECT
 
 public:
-	CCMainWindow(QWidget *parent = nullptr);
+	CCMainWindow(QWidget *parent = nullptr,QString str=" ");
 	~CCMainWindow();
 public:
 	void setUserName(const QString& userName);//设置用户名
@@ -30,7 +30,7 @@ private:
 	void initTimer();//初始化定时器
 	void inintControl();
 	void updateSearchStyle();//更新搜索样式
-	void addCompanyDeps(QTreeWidgetItem* pRootGroupItem, const QString& sDeps);
+	void addCompanyDeps(QTreeWidgetItem* pRootGroupItem, int DepID);
 private:
 	void resizeEvent(QResizeEvent* event);
 	bool eventFilter(QObject* obj, QEvent* event);
@@ -43,5 +43,6 @@ private slots:
 	void onAppIconClicked();
 private:
 	Ui::MainWindowClass ui;
-	QMap<QTreeWidgetItem*, QString>m_groupMap;//所有分组项
+	//QMap<QTreeWidgetItem*, QString>m_groupMap;//所有分组项
+	QString gLoginEmployeeID;//登陆者的qq号
 };

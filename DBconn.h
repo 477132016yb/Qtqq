@@ -15,6 +15,7 @@ public:
 	bool select(string op);
 	bool Query(string op);
 	void close();
+	static DBconn* getInstance();
 	MYSQL_RES* myQuery(string op);
 private:
 	bool closed;

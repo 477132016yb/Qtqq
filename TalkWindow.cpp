@@ -1,9 +1,8 @@
 #include "TalkWindow.h"
 
-TalkWindow::TalkWindow(QWidget* parent, const QString uid, GroupType groupType)
+TalkWindow::TalkWindow(QWidget* parent, const QString uid)
 	: QWidget(parent)
 	,m_talkId(uid)
-	,m_groupType(groupType)
 {
 	ui.setupUi(this);
 	WindowManger::getInstance()->addWindowName(m_talkId,this);
@@ -65,7 +64,7 @@ void TalkWindow::onItemDoubleClicked(QTreeWidgetItem* item, int colnum)
 	bool isChild = item->data(0, Qt::UserRole).toBool();
 	if (isChild) {
 		QString strName = m_groupPeopleMap.value(item);
-		WindowManger::getInstance()->addNewTalkWindow(item->data(0,Qt::UserRole+1).toString(), PTOP, strName);
+		WindowManger::getInstance()->addNewTalkWindow(item->data(0,Qt::UserRole+1).toString());
 	}
 }
 
@@ -87,26 +86,26 @@ void TalkWindow::initControl()
 
 	connect(ui.treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(onItemDoubleClicked(QTreeWidgetItem*, int)));
 
-	switch (m_groupType)
-	{
-	case COMPANY:
-		initCompanyTalk(QString::fromLocal8Bit("公司群"),50);
-		break;
-	case PERSONELGROUP:
-		initCompanyTalk(QString::fromLocal8Bit("人事部"), 32);
-		break;
-	case DEVELOPMENTGROUP:
-		initCompanyTalk(QString::fromLocal8Bit("研发部"), 10);
-		break;
-	case MARKETGROUP:
-		initCompanyTalk(QString::fromLocal8Bit("市场部"), 15);
-		break;
-	case PTOP:
-		initPtoPTalk();
-		break;
-	default:
-		break;
-	}
+	//switch (m_groupType)
+	//{
+	//case COMPANY:
+	//	initCompanyTalk(QString::fromLocal8Bit("公司群"),50);
+	//	break;
+	//case PERSONELGROUP:
+	//	initCompanyTalk(QString::fromLocal8Bit("人事部"), 32);
+	//	break;
+	//case DEVELOPMENTGROUP:
+	//	initCompanyTalk(QString::fromLocal8Bit("研发部"), 10);
+	//	break;
+	//case MARKETGROUP:
+	//	initCompanyTalk(QString::fromLocal8Bit("市场部"), 15);
+	//	break;
+	//case PTOP:
+	//	initPtoPTalk();
+	//	break;
+	//default:
+	//	break;
+	//}
 }
 
 void TalkWindow::initCompanyTalk(const QString &name, int num)

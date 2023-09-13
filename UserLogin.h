@@ -18,7 +18,7 @@ private:
 	void initControl();
 	bool connectMySql();
 	bool veryfyAccountCode();
+	QString m_gLoginEmployeeID;
 private:
 	Ui::UserLoginClass ui;
-	DBconn db;
 };
