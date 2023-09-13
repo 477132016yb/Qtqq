@@ -64,12 +64,7 @@ void TalkWindow::onItemDoubleClicked(QTreeWidgetItem* item, int colnum)
 {
 	bool isChild = item->data(0, Qt::UserRole).toBool();
 	if (isChild) {
-		QString strName = m_groupPeopleMap.value(item);
-		QString str = QString("'%1'").arg(strName);
-		string strSql = "SELECT employeeID FROM tab_employees WHERE employee_name = " + str.toStdString();
-		MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
-		MYSQL_ROW row = mysql_fetch_row(res);
-		WindowManger::getInstance()->addNewTalkWindow(row[0]);
+		WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString());
 	}
 }
 
@@ -174,7 +169,7 @@ void TalkWindow::addPeopInfo(QTreeWidgetItem* pRootGroupItem,int employeeID)
 
 	//添加子节点
 	pChild->setData(0, Qt::UserRole, 1);
-	pChild->setData(0, Qt::UserRole + 1, QString::number((int)pChild));
+	pChild->setData(0, Qt::UserRole + 1, employeeID);
 	ContactItem* pContactItem = new ContactItem(ui.treeWidget);
 
 	//获取名字、签名、头像

@@ -32,7 +32,16 @@ void CCMainWindow::inintControl()
 {
 	//树获取焦点时不绘制边框
 	ui.treeWidget->setStyle(new CustomProxyStyle);
-	setHeadPixmap(":/Resources/MainWindow/girl.png");
+
+	string strSql = "SELECT picture,employee_sign,employee_name FROM tab_employees WHERE employeeID = " + gLoginEmployeeID.toStdString();
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+	MYSQL_ROW row = mysql_fetch_row(res);
+	QString path = row[0];
+	m_sign = row[1];
+	m_name = row[2];
+	setHeadPixmap(path);
+	ui.lineEdit->setText(m_sign);
+
 	setStatusMenuIcon(":/Resources/MainWindow/StatusSucceeded.png");
 
 	QHBoxLayout* appUpLayout = new QHBoxLayout;
@@ -172,7 +181,7 @@ void CCMainWindow::initContactTree()
 
 void CCMainWindow::resizeEvent(QResizeEvent* event)
 {
-	setUserName(QString::fromLocal8Bit("你好世界，世界你好"));
+	setUserName(m_name);
 	BasicWindow::resizeEvent(event);
 }
 

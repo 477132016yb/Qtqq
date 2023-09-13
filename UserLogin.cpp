@@ -33,7 +33,7 @@ void UserLogin::initControl()
 	QLabel* headlabel = new QLabel(this);
 	headlabel->setFixedSize(68, 68);
 	QPixmap pix(":/Resources/MainWindow/head_mask.png");
-	headlabel->setPixmap(getRoundImage(QPixmap(":/Resources/MainWindow/girl.png"), pix, headlabel->size()));
+	headlabel->setPixmap(getRoundImage(QPixmap(":/Resources/MainWindow/app/logo.ico"), pix, headlabel->size()));
 	headlabel->move(width() / 2 - 34, ui.titleWidget->height()-34);
 	connect(ui.loginBtn, &QPushButton::clicked, this, &UserLogin::onLoginBtnClicked);  
 	if(!connectMySql()){

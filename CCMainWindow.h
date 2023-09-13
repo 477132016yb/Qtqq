@@ -43,6 +43,7 @@ private slots:
 	void onAppIconClicked();
 private:
 	Ui::MainWindowClass ui;
-	//QMap<QTreeWidgetItem*, QString>m_groupMap;//所有分组项
 	QString gLoginEmployeeID;//登陆者的qq号
+	QString m_sign;
+	QString m_name;
 };
