@@ -23,11 +23,13 @@ private slots:
 	void onItemDoubleClicked(QTreeWidgetItem*item, int colnum);
 private:
 	void initControl();
-	void initCompanyTalk(const QString& name,int num);//初始化群聊
+	void initGroupTalkStatus();
+	void initGroupTalK();//初始化群聊
 	void initPtoPTalk();//初始化单聊
-	void addPeopInfo(QTreeWidgetItem* pRootGroupItem,int i);
+	void addPeopInfo(QTreeWidgetItem* pRootGroupItem,int employeeID);
 private:
 	Ui::TalkWindowClass ui;
 	QString m_talkId;
 	QMap<QTreeWidgetItem*, QString>m_groupPeopleMap;//所有分组联系人
+	bool m_isGroupTalk;
 };

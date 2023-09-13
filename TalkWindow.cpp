@@ -7,6 +7,7 @@ TalkWindow::TalkWindow(QWidget* parent, const QString uid)
 	ui.setupUi(this);
 	WindowManger::getInstance()->addWindowName(m_talkId,this);
 	setAttribute(Qt::WA_DeleteOnClose);
+	initGroupTalkStatus();
 	initControl();
 }
 
@@ -64,7 +65,11 @@ void TalkWindow::onItemDoubleClicked(QTreeWidgetItem* item, int colnum)
 	bool isChild = item->data(0, Qt::UserRole).toBool();
 	if (isChild) {
 		QString strName = m_groupPeopleMap.value(item);
-		WindowManger::getInstance()->addNewTalkWindow(item->data(0,Qt::UserRole+1).toString());
+		QString str = QString("'%1'").arg(strName);
+		string strSql = "SELECT employeeID FROM tab_employees WHERE employee_name = " + str.toStdString();
+		MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+		MYSQL_ROW row = mysql_fetch_row(res);
+		WindowManger::getInstance()->addNewTalkWindow(row[0]);
 	}
 }
 
@@ -86,29 +91,29 @@ void TalkWindow::initControl()
 
 	connect(ui.treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(onItemDoubleClicked(QTreeWidgetItem*, int)));
 
-	//switch (m_groupType)
-	//{
-	//case COMPANY:
-	//	initCompanyTalk(QString::fromLocal8Bit("公司群"),50);
-	//	break;
-	//case PERSONELGROUP:
-	//	initCompanyTalk(QString::fromLocal8Bit("人事部"), 32);
-	//	break;
-	//case DEVELOPMENTGROUP:
-	//	initCompanyTalk(QString::fromLocal8Bit("研发部"), 10);
-	//	break;
-	//case MARKETGROUP:
-	//	initCompanyTalk(QString::fromLocal8Bit("市场部"), 15);
-	//	break;
-	//case PTOP:
-	//	initPtoPTalk();
-	//	break;
-	//default:
-	//	break;
-	//}
+	if (m_isGroupTalk) {
+		initGroupTalK();
+	}
+	else {
+		initPtoPTalk();
+	}
 }
 
-void TalkWindow::initCompanyTalk(const QString &name, int num)
+
+void TalkWindow::initGroupTalkStatus()
+{
+	//判断群聊还是单聊
+	string strSql = "SELECT picture FROM tab_department WHERE departmentID = " + m_talkId.toStdString();
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+	if (mysql_num_rows(res) == 0) {//单聊
+		m_isGroupTalk = false;
+	}
+	else {
+		m_isGroupTalk = true;
+	}
+}
+
+void TalkWindow::initGroupTalK()
 {
 	QTreeWidgetItem* pRootItem = new QTreeWidgetItem();
 	pRootItem->setChildIndicatorPolicy(QTreeWidgetItem::ShowIndicator);
@@ -119,7 +124,26 @@ void TalkWindow::initCompanyTalk(const QString &name, int num)
 
 	ui.treeWidget->setFixedHeight(646);
 
-	QString qsGroupName = name+QString::fromLocal8Bit("%1/%2").arg(0).arg(num);
+	QString strGroupName;
+	string strSql = "SELECT department_name FROM tab_department WHERE departmentID = " + m_talkId.toStdString();
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+	MYSQL_ROW row = mysql_fetch_row(res);
+	strGroupName = QString(row[0]);
+
+	if (m_talkId.toInt() == 2000) {//公司群
+		strSql = "SELECT employeeID FROM tab_employees WHERE status = 1";
+	}
+	else {
+		strSql = "SELECT employeeID FROM tab_employees WHERE status = 1 AND departmentID = " + m_talkId.toStdString();
+	}
+	res = DBconn::getInstance()->myQuery(strSql);
+	int num = mysql_num_rows(res);
+	vector<string>v;
+	while ((row = mysql_fetch_row(res)) != NULL) {
+		v.push_back(row[0]);
+	}
+
+	QString qsGroupName = strGroupName + QString::fromLocal8Bit("%1/%2").arg(0).arg(num);
 	pItemName->setText(qsGroupName);
 
 	//插入分组节点
@@ -129,7 +153,7 @@ void TalkWindow::initCompanyTalk(const QString &name, int num)
 	//展开
 	pRootItem->setExpanded(true);
 	for (int i = 0; i < num; i++) {
-		addPeopInfo(pRootItem,i);
+		addPeopInfo(pRootItem, stoi(v[i]));
 	}
 }
 
@@ -144,20 +168,29 @@ void TalkWindow::initPtoPTalk()
 	skinLabel->setFixedSize(ui.widget->size());
 }
 
-void TalkWindow::addPeopInfo(QTreeWidgetItem* pRootGroupItem,int i)
+void TalkWindow::addPeopInfo(QTreeWidgetItem* pRootGroupItem,int employeeID)
 {
 	QTreeWidgetItem* pChild = new QTreeWidgetItem();
-	QPixmap mask(":/Resources/MainWindow/head_mask.png");
-	QPixmap image(":/Resources/MainWindow/girl.png");
 
 	//添加子节点
 	pChild->setData(0, Qt::UserRole, 1);
 	pChild->setData(0, Qt::UserRole + 1, QString::number((int)pChild));
 	ContactItem* pContactItem = new ContactItem(ui.treeWidget);
 
+	//获取名字、签名、头像
+	QString strName, strSign, strPicture;
+	string strSql = "SELECT employee_name,employee_sign,picture FROM tab_employees WHERE employeeID = " + to_string(employeeID);
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);
+	MYSQL_ROW row = mysql_fetch_row(res);
+	strName = QString(row[0]);
+	strSign = QString(row[1]);
+	strPicture = QString(row[2]);
+
+	QPixmap mask(":/Resources/MainWindow/head_mask.png");
+	QPixmap image(strPicture);
 	pContactItem->setHeadPixmap(CommonUtils::getRoundImage(image, mask, pContactItem->getHeadLabelSize()));
-	pContactItem->setUserName(QString::fromLocal8Bit("袁斌%1号").arg(i));
-	//pContactItem->setSignName(QString::fromLocal8Bit("%1闪一闪亮晶晶").arg(i));
+	pContactItem->setUserName(strName);
+	pContactItem->setSignName(strSign);
 
 	pRootGroupItem->addChild(pChild);
 	ui.treeWidget->setItemWidget(pChild, 0, pContactItem);

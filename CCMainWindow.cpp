@@ -151,19 +151,15 @@ void CCMainWindow::initContactTree()
 	pItemName->setText(strGroupName);
 
 	//获取公司部门id
-	string queryCompDepID = "SELECT departmentID FROM tab_department WHERE department_name = '公司群'";
+	string str("'公司群'");
+	string queryCompDepID = "SELECT departmentID FROM tab_department WHERE department_name = " + str;
 	MYSQL_RES* res = DBconn::getInstance()->myQuery(queryCompDepID);
-	MYSQL_ROW row;
-	if (res && mysql_num_rows(res)) {
-		row = mysql_fetch_row(res);
-	}
+	MYSQL_ROW row= mysql_fetch_row(res);
 	int CompDepID = 2000;
 	//获取登陆者所在的部门id
 	string querySelfDepID = "SELECT departmentID FROM tab_employees WHERE employeeID = " + gLoginEmployeeID.toStdString();
 	res = DBconn::getInstance()->myQuery(querySelfDepID);
-	if (res && mysql_num_rows(res)) {
-		row = mysql_fetch_row(res);
-	}
+	row = mysql_fetch_row(res);
 	int SelfDepID = stoi(row[0]);
 
 	addCompanyDeps(pRootGroupItem, CompDepID);
@@ -292,20 +288,6 @@ void CCMainWindow::onItemDoubleClicked(QTreeWidgetItem* item, int col)
 	bool isChild = item->data(0, Qt::UserRole).toBool();
 	if (isChild) {
 		WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString());
-		//QString strGroup = m_groupMap.value(item);
-
-		//if (strGroup == QString::fromLocal8Bit("公司群")) {
-		//	WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString(), COMPANY);
-		//}
-		//else if (strGroup == QString::fromLocal8Bit("人事部")) {
-		//	WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString(), PERSONELGROUP);
-		//}
-		//else if (strGroup == QString::fromLocal8Bit("市场部")) {
-		//	WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString(), MARKETGROUP);
-		//}
-		//else if (strGroup == QString::fromLocal8Bit("研发部")) {
-		//	WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString(), DEVELOPMENTGROUP);
-		//}
 	}
 }
 
