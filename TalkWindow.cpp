@@ -27,6 +27,11 @@ void TalkWindow::setWindowName(const QString& name)
 	ui.nameLabel->setText(name);
 }
 
+QString TalkWindow::getTalkId()
+{
+	return m_talkId;
+}
+
 void TalkWindow::onSendBtnClicked(bool)
 {
 	if (ui.textEdit->toPlainText().isEmpty()) {

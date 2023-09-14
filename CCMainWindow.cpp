@@ -1,5 +1,5 @@
 #include "CCMainWindow.h"
-
+QString gLoginID;
 CCMainWindow::CCMainWindow(QWidget *parent,QString str)
 	: BasicWindow(parent)
 	, gLoginEmployeeID(str)
@@ -9,6 +9,7 @@ CCMainWindow::CCMainWindow(QWidget *parent,QString str)
 	loadStyleSheet("CCMainWindow");
 	inintControl();
 	initTimer();
+	gLoginID = gLoginEmployeeID;
 }
 
 CCMainWindow::~CCMainWindow()

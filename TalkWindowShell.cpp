@@ -204,8 +204,64 @@ bool TalkWindowShell::createJSFile(QStringList& emplyeesList)
 	return false;
 }
 
-void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString sFile)
+void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString fileName)
 {
+	//0表情 1文本 2文件
+
+	//获取当前活动聊天窗口
+	TalkWindow* curTalkWindow = dynamic_cast<TalkWindow*>(ui.rightStackedWidget->currentWidget());
+	QString talkId = curTalkWindow->getTalkId();
+
+	QString strGroupFlag;
+	QString strSend;
+	if (talkId.length() == 4) {//群号长度
+		strGroupFlag = "1";
+	}
+	else {
+		strGroupFlag = "0";
+	}
+
+	int dataLength = strData.length();
+	const int sourceDataLength = dataLength;
+	QString strdataLength;
+	if (msgType == 1) {//发送文本信息
+		//文本信息的长度约定为5
+		if (dataLength == 1) {
+			strdataLength = "0000" + QString::number(sourceDataLength);
+		}
+		else if (dataLength == 2) {
+			strdataLength = "000" + QString::number(sourceDataLength);
+		}
+		else if (dataLength == 3) {
+			strdataLength = "00" + QString::number(sourceDataLength);
+		}
+		else if (dataLength == 4) {
+			strdataLength = "0" + QString::number(sourceDataLength);
+		}
+		else if (dataLength == 5) {
+			strdataLength = QString::number(sourceDataLength);
+		}
+		else {
+			QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("不合理的数据长度"));
+		}
+
+		//文本数据包格式：群聊标志+发信息员工qq号+收信息员工qq号（群号）+数据信息类型+数据长度+数据
+		strSend = strGroupFlag + gLoginID + talkId + "1" + strdataLength + strData;
+	}
+	else if (msgType == 0) {//发送表情信息
+		//表情数据包格式：群聊标志+发信息员工qq号+收信息员工qq号（群号）+数据信息类型+表情个数+images+数据
+		strSend = strGroupFlag + gLoginID + talkId + "0" + strData;
+	}
+	else if (msgType == 2) {//发送文件信息
+		//表情数据包格式：群聊标志+发信息员工qq号+收信息员工qq号（群号）+数据信息类型+文件的长度+"bytes"+文件名称+"data_begin"+文件内容
+		QString strLength = QString::number(strData.toUtf8().length());
+		strSend = strGroupFlag + gLoginID + talkId + "2" + strLength + "bytes" + fileName + "data_begin" + strData;
+	}
+
+	QByteArray dataBt;
+	dataBt.resize(strSend.length());
+	dataBt = strSend.toUtf8();
+	m_tcpClientSocket->write(dataBt);
 }
 
 void TalkWindowShell::onTalkWindowItemClicked(QListWidgetItem * item)
