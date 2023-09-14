@@ -28,6 +28,11 @@ void UserLogin::onLoginBtnClicked()
 	mainwindow->show();
 }
 
+void UserLogin::onButtonCloseClicked()
+{
+	QApplication::quit();
+}
+
 void UserLogin::initControl()
 {
 	QLabel* headlabel = new QLabel(this);

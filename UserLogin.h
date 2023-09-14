@@ -14,6 +14,7 @@ public:
 	~UserLogin();
 private slots:
 	void onLoginBtnClicked();
+	void onButtonCloseClicked();
 private:
 	void initControl();
 	bool connectMySql();

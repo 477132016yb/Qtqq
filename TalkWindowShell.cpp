@@ -82,7 +82,7 @@ const QMap<QListWidgetItem*, QWidget*>& TalkWindowShell::getTalkWindowItemMap() 
 void TalkWindowShell::initControl()
 {
 	loadStyleSheet("TalkWindow");
-	setWindowTitle(QString::fromLocal8Bit("张扬-聊天窗口"));
+	setWindowTitle(QString::fromLocal8Bit("聊天窗口"));
 
 	m_emotionWindow = new EmotionWindow;
 	m_emotionWindow->hide();//隐藏表情窗口
@@ -221,25 +221,25 @@ void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString f
 		strGroupFlag = "0";
 	}
 
-	int dataLength = strData.length();
-	const int sourceDataLength = dataLength;
+	int nstrDataLength = strData.length();
+	int dataLength = QString::number(nstrDataLength).length();
 	QString strdataLength;
 	if (msgType == 1) {//发送文本信息
 		//文本信息的长度约定为5
 		if (dataLength == 1) {
-			strdataLength = "0000" + QString::number(sourceDataLength);
+			strdataLength = "0000" + QString::number(nstrDataLength);
 		}
 		else if (dataLength == 2) {
-			strdataLength = "000" + QString::number(sourceDataLength);
+			strdataLength = "000" + QString::number(nstrDataLength);
 		}
 		else if (dataLength == 3) {
-			strdataLength = "00" + QString::number(sourceDataLength);
+			strdataLength = "00" + QString::number(nstrDataLength);
 		}
 		else if (dataLength == 4) {
-			strdataLength = "0" + QString::number(sourceDataLength);
+			strdataLength = "0" + QString::number(nstrDataLength);
 		}
 		else if (dataLength == 5) {
-			strdataLength = QString::number(sourceDataLength);
+			strdataLength = QString::number(nstrDataLength);
 		}
 		else {
 			QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("不合理的数据长度"));
