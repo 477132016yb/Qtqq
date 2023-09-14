@@ -27,6 +27,8 @@ public:
 private:
 	void initControl();
 	void initTcpSocket();//初始化TCP
+	void getEmployeesID(QStringList&emplyeesList);//获取所有员工QQ号
+	bool createJSFile(QStringList&emplyeesList);
 public slots:
 	void onEmotionBtnClicked(bool);//表情按钮点击后
 	void updateSendTcpMsg(QString& strData, int& msgType, QString sFile = "");//客户端发送tcp数据(数据，类型，文件)
