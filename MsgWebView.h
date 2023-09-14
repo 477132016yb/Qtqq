@@ -39,7 +39,7 @@ class MsgWebView : public QWebEngineView
 public:
 	MsgWebView(QWidget* parent);
 	~MsgWebView();
-	void appendMsg(const QString& html);
+	void appendMsg(const QString& html,QString obj="0");
 private:
 	QList<QStringList>parseHtml(const QString& html);//解析html
 	//Qt中所有DOM属性（属性、说明、文本）都可以使用QDomNode表示
