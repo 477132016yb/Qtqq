@@ -10,6 +10,7 @@ TalkWindowShell::TalkWindowShell(QWidget* parent)
 	setAttribute(Qt::WA_DeleteOnClose);
 	initControl();
 	initTcpSocket();
+	initUdpSocket();
 
 	QFile file("/Resources/MainWindow/MsgHtml/msgtmpl.js");
 	if (!file.size()) {
@@ -101,6 +102,18 @@ void TalkWindowShell::initTcpSocket()
 {
 	m_tcpClientSocket = new QTcpSocket(this);
 	m_tcpClientSocket->connectToHost("127.0.0.1", gtcpPort);
+}
+
+void TalkWindowShell::initUdpSocket()
+{
+	m_udpReceiver = new QUdpSocket(this);
+	for (quint16 port = udpPort; port < udpPort + 20; port++) {
+		if (m_udpReceiver->bind(port, QUdpSocket::ShareAddress)) {
+			break;
+		}
+	}
+
+	connect(m_udpReceiver, &QUdpSocket::readyRead, this, &TalkWindowShell::processPendingData);
 }
 
 void TalkWindowShell::getEmployeesID(QStringList& emplyeesList)
@@ -202,6 +215,24 @@ bool TalkWindowShell::createJSFile(QStringList& emplyeesList)
 		return false;
 	}
 	return false;
+}
+
+void TalkWindowShell::processPendingData()
+{
+	/*
+	数据表格式
+	文本数据包：群聊标志+发送信息员工qq号+接收信息员工QQ号（群号）+信息类型（1）+数据长度+数据
+	表情数据包：群聊标志+发送信息员工qq号+接收信息员工QQ号（群号）+信息类型（0）+表情个数+images+表情名称
+	文件数据包：群聊标志+发送信息员工qq号+接收信息员工QQ号（群号）+信息类型（2）+文件字节数+bytes+文件名+data_begin+文件数据
+
+	群聊标志占一位 0单聊 1群聊
+	信息类型占一位 0表情 1文本 2文件
+	QQ号占5位，群号占4位，数据长度占5位，表情名称占3位
+
+	群聊文本信息如 1100012001100005Hello 表示QQ10001向群2001发送文本Hello
+	单聊图片信息如 010001100020060 表示QQ10001向QQ10002发送表情60.png
+	群聊文件信息如 1100052000210bytestext.txtdata_beginhelloworld 表示QQ10005向群2000发送文件信息，文件是text.txt，文件长度10，内容helloworld
+*/
 }
 
 void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString fileName)

@@ -6,12 +6,14 @@
 #include<QListWidget>
 #include"DBconn.h"
 #include<QTcpSocket>
+#include<QudpSocket>
 class TalkWindow;
 class TalkWindowItem;
 class QListWidgetItem;
 class EmotionWindow;
 
 const int gtcpPort = 6666;
+const int udpPort = 8888;
 
 extern QString gLoginID;
 
@@ -29,8 +31,10 @@ public:
 private:
 	void initControl();
 	void initTcpSocket();//初始化TCP
+	void initUdpSocket();//初始化udp
 	void getEmployeesID(QStringList&emplyeesList);//获取所有员工QQ号
 	bool createJSFile(QStringList&emplyeesList);
+	void processPendingData();//处理广播收到的数据
 public slots:
 	void onEmotionBtnClicked(bool);//表情按钮点击后
 	void updateSendTcpMsg(QString& strData, int& msgType, QString fileName = "");//客户端发送tcp数据(数据，类型，文件)
@@ -42,5 +46,6 @@ private:
 	QMap<QListWidgetItem*, QWidget*>m_talkWindowItemMap;//打开的聊天窗口
 	EmotionWindow* m_emotionWindow;//表情窗口
 private:
-	QTcpSocket* m_tcpClientSocket;
+	QTcpSocket* m_tcpClientSocket;//tcp客户端
+	QUdpSocket* m_udpReceiver;//udp接收端
 };
