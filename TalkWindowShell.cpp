@@ -230,9 +230,84 @@ void TalkWindowShell::processPendingData()
 	QQ号占5位，群号占4位，数据长度占5位，表情名称占3位
 
 	群聊文本信息如 1100012001100005Hello 表示QQ10001向群2001发送文本Hello
-	单聊图片信息如 010001100020060 表示QQ10001向QQ10002发送表情60.png
+	单聊图片信息如 0100011000201images060 表示QQ10001向QQ10002发送1个表情60.png
 	群聊文件信息如 1100052000210bytestext.txtdata_beginhelloworld 表示QQ10005向群2000发送文件信息，文件是text.txt，文件长度10，内容helloworld
-*/
+	*/
+
+	//端口中有未处理的数据
+	while (m_udpReceiver->hasPendingDatagrams()) {
+		const static int groupFlgWidth = 1;//群聊标致宽度
+		const static int groupWidth = 4;//群QQ号宽度
+		const static int employeeWidth = 5;//员工QQ号宽度
+		const static int msgTypeWidth = 1;//信息类型宽度
+		const static int msgLengthWidth = 5;//文本信息长度的宽度
+		const static int pictureWidth = 3;//表情图片的宽度
+
+		//读取udp数据
+		QByteArray btData;
+		btData.resize(m_udpReceiver->pendingDatagramSize());
+		m_udpReceiver->readDatagram(btData.data(),btData.size());
+
+		QString strData = btData.data();
+		QString strWindowID;//聊天窗口id，群聊则是群号，单聊则是员工QQ号
+		QString strSenderEmployeeID, strRecevieEmployeeID;//发送及接收端的QQ号
+		QString strMsg;//数据
+
+		int msgLen;//数据长度
+		int msgType;//数据类型
+
+		strSenderEmployeeID = strData.mid(groupFlgWidth, employeeWidth);
+
+		//自己发的信息不做处理
+		if (strSenderEmployeeID == gLoginID) {
+			return;
+		}
+
+		if (btData[0] == '1') {//群聊
+			//群QQ号
+			strWindowID = strData.mid(groupFlgWidth + employeeWidth, groupWidth);
+
+			QChar cmsgType = btData[groupFlgWidth + employeeWidth + groupWidth];
+			if ( cmsgType == '1') {//文本信息
+				msgType = 1;
+				msgLen = strData.mid(groupFlgWidth + employeeWidth + groupWidth + msgTypeWidth, msgLengthWidth).toInt();
+				strMsg = strData.mid(groupFlgWidth + employeeWidth + groupWidth + msgTypeWidth + msgLengthWidth, msgLen);
+			}
+			else if (cmsgType == '0') {//表情信息
+				msgType = 0;
+				int posImages = strData.indexOf("images");
+				strMsg = strData.right(strData.length() - posImages - QString("images").length());
+			}
+			else if (cmsgType == '2') {//文件信息
+				msgType = 2;
+				int bytesWidth = QString("bytes").length();
+				int posBytes = strData.indexOf("bytes");
+				int posData_begin = strData.indexOf("data_begin");
+
+				//文件名称
+				QString fileName = strData.mid(posBytes + bytesWidth, posData_begin - posBytes - bytesWidth);
+
+				//文件内容
+				int dataLengthWidth;
+				int posData = posData_begin + QString("data_begin").length();
+				strMsg = strData.mid(posData);
+
+				//根据employeeID获取发送者姓名
+				QString sender;
+				int employeeID = strSenderEmployeeID.toInt();
+
+				QString sql = QString("SELECT employee_name FROM tab_employees WHERE employeeID = %1").arg(employeeID);
+				MYSQL_RES* res = DBconn::getInstance()->myQuery(sql.toStdString());
+				MYSQL_ROW row = mysql_fetch_row(res);
+				sender = QString(row[0]);
+
+				//接收文件后续操作
+			}
+		}
+		else {//单聊
+
+		}
+	}
 }
 
 void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString fileName)
