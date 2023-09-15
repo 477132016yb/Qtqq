@@ -33,4 +33,5 @@ private:
 	QString m_talkId;
 	QMap<QTreeWidgetItem*, QString>m_groupPeopleMap;//所有分组联系人
 	bool m_isGroupTalk;
+	friend class TalkWindowShell;
 };

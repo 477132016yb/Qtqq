@@ -35,6 +35,11 @@ TalkWindowShell* WindowManger::getTalkWindowShell()
 	return m_talkWindowShell;
 }
 
+QString WindowManger::getCreatingTalkId()
+{
+	return m_strCreatingTalkId;
+}
+
 WindowManger* WindowManger::getInstance()
 {
 	return theInstance;
@@ -50,8 +55,12 @@ void WindowManger::addNewTalkWindow(const QString& uid)
 	}
 	QWidget* widget = findWindowName(uid);
 	if (!widget) {
+		m_strCreatingTalkId = uid;
+
 		TalkWindow* talkWindow = new TalkWindow(m_talkWindowShell, uid);
 		TalkWindowItem* talkWindowItem = new TalkWindowItem(talkWindow);
+
+		m_strCreatingTalkId = "";
 		//判断群聊还是单聊
 		string strSql = "SELECT department_name,sign FROM tab_department WHERE departmentID = "+uid.toStdString();
 		MYSQL_RES* res = DBconn::getInstance()->myQuery(strSql);

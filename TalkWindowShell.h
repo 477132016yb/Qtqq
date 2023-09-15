@@ -35,6 +35,7 @@ private:
 	void getEmployeesID(QStringList&emplyeesList);//获取所有员工QQ号
 	bool createJSFile(QStringList&emplyeesList);
 	void processPendingData();//处理广播收到的数据
+	void handleReceivedMsg(int senderEmployeeID, int msgType, QString strMsg);
 public slots:
 	void onEmotionBtnClicked(bool);//表情按钮点击后
 	void updateSendTcpMsg(QString& strData, int& msgType, QString fileName = "");//客户端发送tcp数据(数据，类型，文件)

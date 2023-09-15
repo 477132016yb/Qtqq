@@ -10,6 +10,9 @@ var external_10008 = null;
 var external_10009 = null;
 var external_10010 = null;
 var external_10011 = null;
+var external_10012 = null;
+var external_10013 = null;
+var external_10014 = null;
 
 
 
@@ -37,6 +40,9 @@ external_10008 = channel.objects.external_10008;
 external_10009 = channel.objects.external_10009;
 external_10010 = channel.objects.external_10010;
 external_10011 = channel.objects.external_10011;
+external_10012 = channel.objects.external_10012;
+external_10013 = channel.objects.external_10013;
+external_10014 = channel.objects.external_10014;
 
 		
 	}
@@ -89,5 +95,17 @@ function recvHtml_10010(msg){
 };
 function recvHtml_10011(msg){
 	$("#placeholder").append(external_10011.msgLHtmlTmpl.format(msg));
+	window.scrollTo(0,document.body.scrollHeight); ;  
+};
+function recvHtml_10012(msg){
+	$("#placeholder").append(external_10012.msgLHtmlTmpl.format(msg));
+	window.scrollTo(0,document.body.scrollHeight); ;  
+};
+function recvHtml_10013(msg){
+	$("#placeholder").append(external_10013.msgLHtmlTmpl.format(msg));
+	window.scrollTo(0,document.body.scrollHeight); ;  
+};
+function recvHtml_10014(msg){
+	$("#placeholder").append(external_10014.msgLHtmlTmpl.format(msg));
 	window.scrollTo(0,document.body.scrollHeight); ;  
 };

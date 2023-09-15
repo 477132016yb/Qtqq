@@ -1,4 +1,5 @@
 #include "CCMainWindow.h"
+QString gstrLoginHeadPath;
 QString gLoginID;
 CCMainWindow::CCMainWindow(QWidget *parent,QString str)
 	: BasicWindow(parent)
@@ -40,6 +41,7 @@ void CCMainWindow::inintControl()
 	QString path = row[0];
 	m_sign = row[1];
 	m_name = row[2];
+	gstrLoginHeadPath = path;
 	setHeadPixmap(path);
 	ui.lineEdit->setText(m_sign);
 

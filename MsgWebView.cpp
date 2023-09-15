@@ -1,18 +1,77 @@
-#include "MsgWebView.h"
+#include"MsgWebView.h"
+#include<QFile>
+#include<QMessageBox>
+#include<QJsonObject>
+#include<QJsonDocument>
+#include<QWebChannel>
+#include"TalkWindowShell.h"
+#include"WindowManger.h"
+
+extern QString gstrLoginHeadPath;
 
 MsgWebView::MsgWebView(QWidget* parent)
 	: QWebEngineView(parent)
+	,m_channel(new QWebChannel(this))
 {
 	MsgWebPage* page = new MsgWebPage(this);
 	setPage(page);
 
-	QWebChannel* channel = new QWebChannel(this);
 	m_msgHtmlObj = new MsgHtmlObject(this);
-	channel->registerObject("external", m_msgHtmlObj);
-	this->page()->setWebChannel(channel);
+	m_channel->registerObject("external0", m_msgHtmlObj);
 
 	TalkWindowShell* talkWindowShell = WindowManger::getInstance()->getTalkWindowShell();
 	connect(this, &MsgWebView::signalSendMsg, talkWindowShell, &TalkWindowShell::updateSendTcpMsg);
+
+	//当前正在构建的聊天窗口（QQ号）
+	QString strTalkId = WindowManger::getInstance()->getCreatingTalkId();
+
+	QString strEmployeeID, strPicturePath;
+	QString strExternal;
+	bool isGroup = false;
+
+	//获取公司群id
+	QString sql = QString("SELECT departmentID FROM tab_department WHERE department_name = '%1'").arg(QString::fromLocal8Bit("公司群"));
+	MYSQL_RES* res = DBconn::getInstance()->myQuery(sql.toStdString());
+	MYSQL_ROW row = mysql_fetch_row(res);
+	QString strCompanyID = QString(row[0]);
+
+	if (strTalkId == strCompanyID) {//公司群聊
+		isGroup = true;
+		sql = QString("SELECT employeeID,picture FROM tab_employees WHERE status = 1");
+	}
+	else {
+		if (strTalkId.length() == 4) {//其他群聊
+			isGroup = true;
+			sql = QString("SELECT employeeID,picture FROM tab_employees WHERE status = 1 AND departmentID = %1").arg(strTalkId);
+		}
+		else {//单独聊天
+			sql = QString("SELECT picture FROM tab_employees WHERE status = 1 AND employeeID = %1").arg(strTalkId);
+			res = DBconn::getInstance()->myQuery(sql.toStdString());
+			row = mysql_fetch_row(res);
+			strPicturePath = QString(row[0]);
+
+			strExternal = "external_" + strTalkId;
+			MsgHtmlObject* msgHtml = new MsgHtmlObject(this, strPicturePath);
+			m_channel->registerObject(strExternal, msgHtml);
+		}
+	}
+
+	if (isGroup) {
+		res = DBconn::getInstance()->myQuery(sql.toStdString());
+		int count = mysql_num_rows(res);
+		for (int i = 0; i < count; i++) {
+			row = mysql_fetch_row(res);
+			strEmployeeID = QString(row[0]);
+			strPicturePath = QString(row[1]);
+
+			strExternal = "external_" + strEmployeeID;
+
+			MsgHtmlObject* msgHtml = new MsgHtmlObject(this, strPicturePath);
+			m_channel->registerObject(strExternal, msgHtml);
+		}
+	}
+
+	this->page()->setWebChannel(m_channel);
 	//初始化收信息页面
 	this->load(QUrl("qrc:/Resources/MainWindow/MsgHtml/msgTmpl.html"));
 }
@@ -20,7 +79,7 @@ MsgWebView::MsgWebView(QWidget* parent)
 MsgWebView::~MsgWebView()
 {}
 
-void MsgWebView::appendMsg(const QString& html, QString obj)
+void MsgWebView::appendMsg(const QString& html,const QString obj)
 {
 	QJsonObject msgObj;
 	QString qsMsg;
@@ -89,7 +148,8 @@ void MsgWebView::appendMsg(const QString& html, QString obj)
 		emit signalSendMsg(strData, msgType);
 	}
 	else {//来信
-		this->page()->runJavaScript(QString("recvHtml_%1(%2)").arg(obj).arg(Msg));
+		QString js = QString("recvHtml_%1(%2)").arg(obj).arg(Msg);
+		this->page()->runJavaScript(js);
 	}
 }
 
@@ -131,7 +191,8 @@ QList<QStringList> MsgWebView::parseDocNode(const QDomNode& node)
 	return attribute;
 }
 
-MsgHtmlObject::MsgHtmlObject(QObject* parent)
+MsgHtmlObject::MsgHtmlObject(QObject* parent, QString msgLPicPath):QObject(parent)
+,m_msgLPicPath(msgLPicPath)
 {
 	initHtmlTmpl();
 }
@@ -139,7 +200,10 @@ MsgHtmlObject::MsgHtmlObject(QObject* parent)
 void MsgHtmlObject::initHtmlTmpl()
 {
 	m_msgLHtmlTmpl = getMsgTempHtml("msgleftTmpl");
+	m_msgLHtmlTmpl.replace("%1", m_msgLPicPath);
+
 	m_msgRHtmlTmpl = getMsgTempHtml("msgrightTmpl");
+	m_msgRHtmlTmpl.replace("%1", gstrLoginHeadPath);
 }
 
 QString MsgHtmlObject::getMsgTempHtml(const QString& code)

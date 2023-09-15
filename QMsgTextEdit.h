@@ -9,7 +9,7 @@ class QMsgTextEdit  : public QTextEdit
 	Q_OBJECT
 
 public:
-	QMsgTextEdit(QWidget *parent);
+	QMsgTextEdit(QWidget *parent=nullptr);
 	~QMsgTextEdit();
 private slots:
 	void onEmotionImageFrameChange(int frame);//动画改变时响应的槽函数

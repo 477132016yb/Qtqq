@@ -108,12 +108,11 @@ void TalkWindowShell::initUdpSocket()
 {
 	m_udpReceiver = new QUdpSocket(this);
 	for (quint16 port = udpPort; port < udpPort + 20; port++) {
-		if (m_udpReceiver->bind(port, QUdpSocket::ShareAddress)) {
+		if (m_udpReceiver->bind(QHostAddress::AnyIPv4,port)) {
+			connect(m_udpReceiver, &QUdpSocket::readyRead, this, &TalkWindowShell::processPendingData);
 			break;
 		}
 	}
-
-	connect(m_udpReceiver, &QUdpSocket::readyRead, this, &TalkWindowShell::processPendingData);
 }
 
 void TalkWindowShell::getEmployeesID(QStringList& emplyeesList)
@@ -276,7 +275,8 @@ void TalkWindowShell::processPendingData()
 			else if (cmsgType == '0') {//表情信息
 				msgType = 0;
 				int posImages = strData.indexOf("images");
-				strMsg = strData.right(strData.length() - posImages - QString("images").length());
+				int imagesWidth = QString("images").length();
+				strMsg = strData.mid(posImages + imagesWidth);
 			}
 			else if (cmsgType == '2') {//文件信息
 				msgType = 2;
@@ -288,7 +288,6 @@ void TalkWindowShell::processPendingData()
 				QString fileName = strData.mid(posBytes + bytesWidth, posData_begin - posBytes - bytesWidth);
 
 				//文件内容
-				int dataLengthWidth;
 				int posData = posData_begin + QString("data_begin").length();
 				strMsg = strData.mid(posData);
 
@@ -305,9 +304,108 @@ void TalkWindowShell::processPendingData()
 			}
 		}
 		else {//单聊
+			//接收者QQ号
+			strRecevieEmployeeID = strData.mid(groupFlgWidth + employeeWidth, employeeWidth);
+			strWindowID = strSenderEmployeeID;
 
+			QChar cmsgType = btData[groupFlgWidth + employeeWidth + employeeWidth];
+			if (cmsgType == '1') {//文本信息
+				msgType = 1;
+				msgLen = strData.mid(groupFlgWidth + employeeWidth + employeeWidth + msgTypeWidth, msgLengthWidth).toInt();
+				strMsg = strData.mid(groupFlgWidth + employeeWidth + employeeWidth + msgTypeWidth + msgLengthWidth, msgLen);
+			}
+			else if (cmsgType == '0') {//表情信息
+				msgType = 0;
+				int posImages = strData.indexOf("images");
+				int imagesWidth = QString("images").length();
+				strMsg = strData.mid(posImages+imagesWidth);
+			}
+			else if (cmsgType == '2') {//文件信息
+				msgType = 2;
+				int bytesWidth = QString("bytes").length();
+				int posBytes = strData.indexOf("bytes");
+				int posData_begin = strData.indexOf("data_begin");
+
+				//文件名称
+				QString fileName = strData.mid(posBytes + bytesWidth, posData_begin - posBytes - bytesWidth);
+
+				//文件内容
+				int posData = posData_begin + QString("data_begin").length();
+				strMsg = strData.mid(posData);
+
+				//根据employeeID获取发送者姓名
+				QString sender;
+				int employeeID = strSenderEmployeeID.toInt();
+
+				QString sql = QString("SELECT employee_name FROM tab_employees WHERE employeeID = %1").arg(employeeID);
+				MYSQL_RES* res = DBconn::getInstance()->myQuery(sql.toStdString());
+				MYSQL_ROW row = mysql_fetch_row(res);
+				sender = QString(row[0]);
+
+				//接收文件后续操作
+			}
+		}
+
+		//将聊天窗口设置为活动窗口
+		QWidget* widget = WindowManger::getInstance()->findWindowName(strWindowID);
+		if (widget) {//聊天窗口已打开
+			this->setCurrentWidget(widget);
+
+			//同步激活左侧聊天窗口
+			QListWidgetItem* item = m_talkWindowItemMap.key(widget);
+			item->setSelected(true);
+		}
+		else {
+			return;
+		}
+		int sendID = strSenderEmployeeID.toInt();
+		//文件信息另做处理
+		if (msgType != 2) {
+			handleReceivedMsg(sendID, msgType, strMsg);
 		}
 	}
+}
+
+void TalkWindowShell::handleReceivedMsg(int senderEmployeeID, int msgType, QString strMsg)
+{
+	QMsgTextEdit msgTextEdit;
+	msgTextEdit.setText(strMsg);
+
+	if (msgType == 1) {//文本信息
+		msgTextEdit.document()->toHtml();
+	}
+	else if (msgType == 0) {//表情信息
+		const int emotionWidth = 3;
+		int emotionNum = strMsg.length() / emotionWidth;
+		for (int i = 0; i < emotionNum; i++) {
+			msgTextEdit.addEmotionUrl(strMsg.mid(i * emotionWidth, emotionWidth).toInt());
+		}
+	}
+
+	QString html = msgTextEdit.document()->toHtml();
+
+	//文本html如果没有字体则添加字体
+	if (!html.contains(".png") && !html.contains("</span>")) {
+		QString fontHtml;
+		QFile file(":/Resources/MainWindow/MsgHtml/msgFont.txt");
+		if (file.open(QIODevice::ReadOnly)) {
+			fontHtml = file.readAll();
+			fontHtml.replace("%1", strMsg);
+			file.close();
+		}
+		else {
+			QMessageBox::information(this, "Tips", "file not exist!");
+			return;
+		}
+		if (!html.contains(fontHtml)) {
+			html.replace(strMsg, fontHtml);
+		}
+	}
+
+	TalkWindow* talkWindow = dynamic_cast<TalkWindow*>(ui.rightStackedWidget->currentWidget());
+	string s = to_string(senderEmployeeID);
+	const QString str = QString::fromStdString(s);
+	talkWindow->ui.msgWidget->appendMsg(html,str); 
 }
 
 void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString fileName)
