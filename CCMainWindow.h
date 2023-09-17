@@ -41,6 +41,7 @@ private slots:
 	void onItemCollapsed(QTreeWidgetItem*item);
 	void onItemDoubleClicked(QTreeWidgetItem* item, int col);
 	void onAppIconClicked();
+	void onShowQuit(bool);
 private:
 	Ui::MainWindowClass ui;
 	QString gLoginEmployeeID;//µÇÂ½ÕßµÄqqºÅ

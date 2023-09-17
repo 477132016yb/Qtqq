@@ -38,7 +38,7 @@ private:
 	void handleReceivedMsg(int senderEmployeeID, int msgType, QString strMsg);
 public slots:
 	void onEmotionBtnClicked(bool);//表情按钮点击后
-	void updateSendTcpMsg(QString& strData, int& msgType, QString fileName = "");//客户端发送tcp数据(数据，类型，文件)
+	void updateSendTcpMsg(QString& strData, int msgType, QString fileName = "");//客户端发送tcp数据(数据，类型，文件)
 private slots:
 	void onTalkWindowItemClicked(QListWidgetItem*item);//左侧列表
 	void onEmotionItemClicked(int emotionNum);//表情被选中

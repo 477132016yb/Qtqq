@@ -20,6 +20,7 @@ public:
 	void setWindowName(const QString& name);
 	QString getTalkId();
 private slots:
+	void onfileopenBtnClicked(bool);
 	void onSendBtnClicked(bool);
 	void onItemDoubleClicked(QTreeWidgetItem*item, int colnum);
 private:

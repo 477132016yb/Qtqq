@@ -1,5 +1,6 @@
 #include "TalkWindow.h"
-
+#include"SendFile.h"
+extern QString gLoginID;
 TalkWindow::TalkWindow(QWidget* parent, const QString uid)
 	: QWidget(parent)
 	,m_talkId(uid)
@@ -30,6 +31,12 @@ void TalkWindow::setWindowName(const QString& name)
 QString TalkWindow::getTalkId()
 {
 	return m_talkId;
+}
+
+void TalkWindow::onfileopenBtnClicked(bool)
+{
+	SendFile* sendFile = new SendFile();
+	sendFile->show();
 }
 
 void TalkWindow::onSendBtnClicked(bool)
@@ -69,6 +76,8 @@ void TalkWindow::onItemDoubleClicked(QTreeWidgetItem* item, int colnum)
 {
 	bool isChild = item->data(0, Qt::UserRole).toBool();
 	if (isChild) {
+		int talkId = item->data(0, Qt::UserRole + 1).toInt();
+		if (talkId == gLoginID.toInt()) { return; }
 		WindowManger::getInstance()->addNewTalkWindow(item->data(0, Qt::UserRole + 1).toString());
 	}
 }
@@ -88,6 +97,7 @@ void TalkWindow::initControl()
 
 	connect(ui.faceBtn, SIGNAL(clicked(bool)), parent(), SLOT(onEmotionBtnClicked(bool)));
 	connect(ui.sendBtn, SIGNAL(clicked(bool)), this, SLOT(onSendBtnClicked(bool)));
+	connect(ui.fileopenBtn, SIGNAL(clicked(bool)), this, SLOT(onfileopenBtnClicked(bool)));
 
 	connect(ui.treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(onItemDoubleClicked(QTreeWidgetItem*, int)));
 
@@ -138,7 +148,7 @@ void TalkWindow::initGroupTalK()
 	}
 	res = DBconn::getInstance()->myQuery(strSql);
 	int num = mysql_num_rows(res);
-	vector<string>v;
+	vector<QString>v;
 	while ((row = mysql_fetch_row(res)) != NULL) {
 		v.push_back(row[0]);
 	}
@@ -153,7 +163,7 @@ void TalkWindow::initGroupTalK()
 	//Õ¹¿ª
 	pRootItem->setExpanded(true);
 	for (int i = 0; i < num; i++) {
-		addPeopInfo(pRootItem, stoi(v[i]));
+		addPeopInfo(pRootItem, v[i].toInt());
 	}
 }
 

@@ -12,7 +12,6 @@ var external_10010 = null;
 var external_10011 = null;
 var external_10012 = null;
 var external_10013 = null;
-var external_10014 = null;
 
 
 
@@ -42,7 +41,6 @@ external_10010 = channel.objects.external_10010;
 external_10011 = channel.objects.external_10011;
 external_10012 = channel.objects.external_10012;
 external_10013 = channel.objects.external_10013;
-external_10014 = channel.objects.external_10014;
 
 		
 	}
@@ -103,9 +101,5 @@ function recvHtml_10012(msg){
 };
 function recvHtml_10013(msg){
 	$("#placeholder").append(external_10013.msgLHtmlTmpl.format(msg));
-	window.scrollTo(0,document.body.scrollHeight); ;  
-};
-function recvHtml_10014(msg){
-	$("#placeholder").append(external_10014.msgLHtmlTmpl.format(msg));
 	window.scrollTo(0,document.body.scrollHeight); ;  
 };

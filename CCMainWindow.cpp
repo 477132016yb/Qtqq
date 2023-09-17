@@ -311,3 +311,11 @@ void CCMainWindow::onAppIconClicked()
 		skinWindow->show();
 	}
 }
+
+void CCMainWindow::onShowQuit(bool)
+{
+	//更新状态为离线
+	QString strSqlCode = QString("UPDATE tab_employees SET  online = 1 WHERE employeeID = %1").arg(gLoginEmployeeID);
+	DBconn::getInstance()->myQuery(strSqlCode.toStdString());
+	QApplication::quit();
+}

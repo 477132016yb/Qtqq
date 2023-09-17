@@ -1,7 +1,12 @@
-#include "TalkWindowShell.h"
+#pragma once
+#include"TalkWindowShell.h"
 #include"EmotionWindow.h"
 #include"TalkWindow.h"
 #include"TalkWindowItem.h"
+#include"ReceiveFile.h"
+
+QString gfileName;//文件名称
+QString gfileData;//文件内容
 
 TalkWindowShell::TalkWindowShell(QWidget* parent)
 	: BasicWindow(parent)
@@ -18,6 +23,7 @@ TalkWindowShell::TalkWindowShell(QWidget* parent)
 		getEmployeesID(emplyeesList);
 		if (!createJSFile(emplyeesList)) {
 			QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("更新js文件数据失败"));
+			file.close();
 		}
 	}
 }
@@ -137,6 +143,7 @@ bool TalkWindowShell::createJSFile(QStringList& emplyeesList)
 	}
 	else {
 		QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("读取msgtmpl.txt失败"));
+		fileRead.close();
 		return false;
 	}
 	//替换（extrnal0，appendHtml0用作自己发送信息）
@@ -162,6 +169,7 @@ bool TalkWindowShell::createJSFile(QStringList& emplyeesList)
 		}
 		else {
 			QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("读取recvHtml.txt失败"));
+			fileRecvHtml.close();
 			return false;
 		}
 
@@ -211,6 +219,7 @@ bool TalkWindowShell::createJSFile(QStringList& emplyeesList)
 	}
 	else {
 		QMessageBox::information(this, QString::fromLocal8Bit("提示"), QString::fromLocal8Bit("写msgtempl.js失败"));
+		fileWrite.close();
 		return false;
 	}
 	return false;
@@ -286,10 +295,12 @@ void TalkWindowShell::processPendingData()
 
 				//文件名称
 				QString fileName = strData.mid(posBytes + bytesWidth, posData_begin - posBytes - bytesWidth);
+				gfileName = fileName;
 
 				//文件内容
 				int posData = posData_begin + QString("data_begin").length();
 				strMsg = strData.mid(posData);
+				gfileData = strMsg;
 
 				//根据employeeID获取发送者姓名
 				QString sender;
@@ -301,12 +312,24 @@ void TalkWindowShell::processPendingData()
 				sender = QString(row[0]);
 
 				//接收文件后续操作
+				ReceiveFile* receiveFile = new ReceiveFile(this);
+				connect(receiveFile, &ReceiveFile::refuseFile, [this]() {
+					return;
+				});
+				QString msgLabel = QString::fromLocal8Bit("收到来自%1发送的文件，是否接收？").arg(sender);
+				receiveFile->setMsg(msgLabel);
+				receiveFile->show();
 			}
 		}
 		else {//单聊
 			//接收者QQ号
 			strRecevieEmployeeID = strData.mid(groupFlgWidth + employeeWidth, employeeWidth);
 			strWindowID = strSenderEmployeeID;
+
+			//不是发给我的信息不做处理
+			if (strRecevieEmployeeID != gLoginID) {
+				return;
+			}
 
 			QChar cmsgType = btData[groupFlgWidth + employeeWidth + employeeWidth];
 			if (cmsgType == '1') {//文本信息
@@ -328,10 +351,12 @@ void TalkWindowShell::processPendingData()
 
 				//文件名称
 				QString fileName = strData.mid(posBytes + bytesWidth, posData_begin - posBytes - bytesWidth);
+				gfileName = fileName;
 
 				//文件内容
 				int posData = posData_begin + QString("data_begin").length();
 				strMsg = strData.mid(posData);
+				gfileData = strMsg;
 
 				//根据employeeID获取发送者姓名
 				QString sender;
@@ -343,6 +368,13 @@ void TalkWindowShell::processPendingData()
 				sender = QString(row[0]);
 
 				//接收文件后续操作
+				ReceiveFile* receiveFile = new ReceiveFile(this);
+				connect(receiveFile, &ReceiveFile::refuseFile, [this]() {
+					return;
+				});
+				QString msgLabel = QString::fromLocal8Bit("收到来自%1发送的文件，是否接收？").arg(sender);
+				receiveFile->setMsg(msgLabel);
+				receiveFile->show();
 			}
 		}
 
@@ -408,7 +440,7 @@ void TalkWindowShell::handleReceivedMsg(int senderEmployeeID, int msgType, QStri
 	talkWindow->ui.msgWidget->appendMsg(html,str); 
 }
 
-void TalkWindowShell::updateSendTcpMsg(QString& strData, int& msgType, QString fileName)
+void TalkWindowShell::updateSendTcpMsg(QString& strData, int msgType, QString fileName)
 {
 	//0表情 1文本 2文件
 

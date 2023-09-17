@@ -24,6 +24,11 @@ void UserLogin::onLoginBtnClicked()
 		return;
 	}
 	close();
+
+	//¸üÐÂ×´Ì¬ÎªµÇÂ¼
+	QString strSqlCode = QString("UPDATE tab_employees SET  online = 2 WHERE employeeID = %1").arg(m_gLoginEmployeeID);
+	DBconn::getInstance()->myQuery(strSqlCode.toStdString());
+
 	CCMainWindow *mainwindow = new CCMainWindow(nullptr,m_gLoginEmployeeID);
 	mainwindow->show();
 }
@@ -50,7 +55,7 @@ void UserLogin::initControl()
 
 bool UserLogin::connectMySql()
 {
-	return  DBconn::getInstance()->getConnection("localhost", "root", "123456", "qtqq");
+	return  DBconn::getInstance()->getConnection("192.168.120.1", "root", "123456", "qtqq");
 }
 
 bool UserLogin::veryfyAccountCode()

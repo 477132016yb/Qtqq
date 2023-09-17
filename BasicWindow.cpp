@@ -6,7 +6,8 @@ BasicWindow::BasicWindow(QWidget* parent) :QDialog(parent)
 	//setAttribute(Qt::WA_TranslucentBackground, true);
 	connect(NotifyManager::getInstance(), SIGNAL(signalSkinChanged(const QColor&)), this, SLOT(onSignalSkinChanged(const QColor&)));
 }
-BasicWindow::~BasicWindow() 
+
+BasicWindow::~BasicWindow()
 {
 
 }
@@ -148,7 +149,6 @@ void BasicWindow::initTitleBar(ButtonType buttonType) {
 	connect(m_titleBar, SIGNAL(signalButtonRestoreClicked()), this, SLOT(onButtonRestoreClicked()));
 	connect(m_titleBar, SIGNAL(signalButtonCloseClicked()), this, SLOT(onButtonCloseClicked()));
 }
-
 
 void BasicWindow::loadStyleSheet(const QString& sheetName) {
 	m_styleName = sheetName;
